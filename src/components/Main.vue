@@ -8,21 +8,23 @@
         @keyup="filterItems"
       />
     </div>
-    <table class="mx-auto table-auto text-center">
+    <table class="mx-auto table-auto text-center text-xs">
       <thead>
         <tr>
-          <th class="px-4 py-2">Countries</th>
-          <th class="px-4 py-2">Infected</th>
-          <th class="px-4 py-2">Death</th>
-          <th class="px-4 py-2">Recovered</th>
+          <th class="sm:px-4 py-2">Countries</th>
+          <th class="sm:px-4 py-2">Infected</th>
+          <th class="sm:px-4 py-2">Death</th>
+          <th class="sm:px-4 py-2">Recovered</th>
+          <th class="sm:px-4 py-2">Rate</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in filteredData" :key="item.name">
-          <td class="border px-4 py-2">{{item.name}}</td>
-          <td class="border px-4 py-2">{{item.infected}}</td>
-          <td class="border px-4 py-2">{{item.death}}</td>
-          <td class="border px-4 py-2">{{item.recovered}}</td>
+          <td class="border sm:px-4 py-2">{{item.name}}</td>
+          <td class="border sm:px-4 py-2">{{item.infected}}</td>
+          <td class="border sm:px-4 py-2">{{item.death}}</td>
+          <td class="border sm:px-4 py-2">{{item.recovered}}</td>
+          <td class="border sm:px-4 py-2">{{rate(item)}}%</td>
         </tr>
       </tbody>
     </table>
@@ -54,6 +56,10 @@ export default {
       return html
         .match(/<td(|\s+[^>]*)>(.*?)<\/td\s*>/g)
         .map(m => m.replace(/<\/?[^>]+(>|$)/g, ""));
+    },
+    rate(item) {
+      let sum = +item.recovered + +item.death;
+      return ((+item.death * 100) / sum).toFixed(2);
     },
     toJson(arr) {
       // let date = arr[0];
