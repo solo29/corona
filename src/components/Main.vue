@@ -1,14 +1,42 @@
 <template>
-  <div>
-    <div class="text-center">{{updated}}</div>
-    <div class="px-2">
+  <div class="text-gray-500">
+    <div class="text-center" @click="reload">{{updated}}</div>
+    <div>
+      <table class="mx-auto table-auto text-center text-xs">
+        <thead>
+          <tr>
+            <th class="sm:px-4 py-2">Total Infected</th>
+            <th class="sm:px-4 py-2">Total Death</th>
+            <th class="sm:px-4 py-2">Total Recovered</th>
+            <th class="sm:px-4 py-2">Total Death Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border sm:px-4 py-2">
+              <Number :number="totalInfected" />
+            </td>
+            <td class="border sm:px-4 py-2">
+              <Number :number="totalDeath" />
+            </td>
+            <td class="border sm:px-4 py-2">
+              <Number :number="totalRecovered" />
+            </td>
+            <td class="border sm:px-4 py-2">{{rate(totalRecovered, totalDeath)}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="px-2 mt-2">
       <input
-        class="bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"
+        class="uppercase text-center bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"
         type="text"
         @keyup="filterItems"
+        v-model="filterVal"
       />
     </div>
-    <table class="mx-auto table-auto text-center text-xs">
+    <table class="mx-auto table-fixed text-center text-xs">
       <thead>
         <tr>
           <th class="sm:px-4 py-2">Countries</th>
@@ -20,36 +48,63 @@
       </thead>
       <tbody>
         <tr v-for="item in filteredData" :key="item.name">
-          <td class="border sm:px-4 py-2">{{item.name}}</td>
-          <td class="border sm:px-4 py-2">{{item.infected}}</td>
-          <td class="border sm:px-4 py-2">{{item.death}}</td>
-          <td class="border sm:px-4 py-2">{{item.recovered}}</td>
-          <td class="border sm:px-4 py-2">{{rate(item)}}%</td>
+          <td class="w-1/4 border sm:px-4 py-2">{{item.name}}</td>
+          <td class="w-1/4 border sm:px-4 py-2">
+            <Number :number="item.infected" />
+          </td>
+          <td class="w-1/4 border sm:px-4 py-2">
+            <Number :number="item.death" />
+          </td>
+          <td class="w-1/4 border sm:px-4 py-2">
+            <Number :number="item.death" />
+          </td>
+          <td class="w-1/4 border sm:px-4 py-2">{{rate(item.recovered, item.death) }}%</td>
         </tr>
       </tbody>
     </table>
-    <!-- <ul>
-      <li v-for="item in filteredData" :key="item.name">{{item}}</li>
-    </ul>-->
   </div>
 </template>
 
 <script>
+import Number from "./Number.vue";
 export default {
   name: "Main",
-
+  components: {
+    Number
+  },
   data() {
     return {
+      filterVal: null,
       updated: null,
       data: null,
       filteredData: null
     };
   },
+  computed: {
+    totalInfected: function() {
+      if (this.data) return this.sum(this.data.map(x => +x.infected));
+      else return null;
+    },
+    totalRecovered: function() {
+      if (this.data) return this.sum(this.data.map(x => +x.recovered));
+      else return null;
+    },
+    totalDeath: function() {
+      if (this.data) return this.sum(this.data.map(x => +x.death));
+      else return null;
+    }
+  },
   methods: {
-    filterItems(e) {
-      if (!this.data || !e.target) return;
-      let val = e.target.value.toUpperCase();
-      console.log(val);
+    reload() {
+      this.getData();
+    },
+    sum(arr) {
+      return arr.reduce((prev, curr) => prev + curr, 0);
+    },
+    filterItems() {
+      if (!this.data) return;
+      let val = this.filterVal ? this.filterVal.toUpperCase() : "";
+
       this.filteredData = this.data.filter(item => item.name.startsWith(val));
     },
     parseHtml(html) {
@@ -57,9 +112,9 @@ export default {
         .match(/<td(|\s+[^>]*)>(.*?)<\/td\s*>/g)
         .map(m => m.replace(/<\/?[^>]+(>|$)/g, ""));
     },
-    rate(item) {
-      let sum = +item.recovered + +item.death;
-      return ((+item.death * 100) / sum).toFixed(2);
+    rate(recovered, death) {
+      let sum = +recovered + +death;
+      return ((+death * 100) / sum).toFixed(2);
     },
     toJson(arr) {
       // let date = arr[0];
@@ -85,23 +140,31 @@ export default {
         return -1;
       }
       return 0;
+    },
+    getData() {
+      this.axios
+        .get(
+          "https://docs.google.com/spreadsheets/d/e/2PACX-1vQuDj0R6K85sdtI8I-Tc7RCx8CnIxKUQue0TCUdrFOKDw9G3JRtGhl64laDd3apApEvIJTdPFJ9fEUL/pubhtml?gid=0&single=true"
+        )
+        .then(x => {
+          let html = this.parseHtml(x.data);
+          let json = this.toJson(html);
+
+          this.updated = html[0];
+          console.log("loaded");
+
+          this.data = json;
+          this.filteredData = this.data;
+          this.filterItems();
+        });
     }
   },
   mounted() {
-    this.axios
-      .get(
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vQuDj0R6K85sdtI8I-Tc7RCx8CnIxKUQue0TCUdrFOKDw9G3JRtGhl64laDd3apApEvIJTdPFJ9fEUL/pubhtml?gid=0&single=true"
-      )
-      .then(x => {
-        let html = this.parseHtml(x.data);
-        let json = this.toJson(html);
+    this.getData();
 
-        this.updated = html[0];
-        console.log(json);
-
-        this.data = json;
-        this.filteredData = json;
-      });
+    setInterval(() => {
+      this.getData();
+    }, 60000);
   }
 };
 </script>
