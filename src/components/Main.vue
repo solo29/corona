@@ -56,7 +56,7 @@
             <Number :number="item.death" />
           </td>
           <td class="w-1/4 border sm:px-4 py-2">
-            <Number :number="item.death" />
+            <Number :number="item.recovered" />
           </td>
           <td class="w-1/4 border sm:px-4 py-2">{{rate(item.recovered, item.death) }}%</td>
         </tr>
