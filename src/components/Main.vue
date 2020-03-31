@@ -2,30 +2,27 @@
   <div class="text-gray-500">
     <div class="text-center" @click="reload">{{updated}}</div>
     <div>
-      <table class="mx-auto table-auto text-center text-xs">
-        <thead>
-          <tr>
-            <th class="sm:px-4 py-2">Total Infected</th>
-            <th class="sm:px-4 py-2">Total Death</th>
-            <th class="sm:px-4 py-2">Total Recovered</th>
-            <th class="sm:px-4 py-2">Total Death Rate</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="border sm:px-4 py-2">
-              <Number :number="totalInfected" />
-            </td>
-            <td class="border sm:px-4 py-2">
-              <Number :number="totalDeath" />
-            </td>
-            <td class="border sm:px-4 py-2">
-              <Number :number="totalRecovered" />
-            </td>
-            <td class="border sm:px-4 py-2">{{rate(totalRecovered, totalDeath)}}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="board">
+        <ul class="stats">
+          <li>
+            <p class="stats--info">Total Infected</p>
+            <Number color="yellow" :number="totalInfected" />
+          </li>
+          <li>
+            <p class="stats--info">Total Death</p>
+            <Number color="red" :number="totalDeath" />
+          </li>
+          <li>
+            <p class="stats--info">Total Recovered</p>
+            <Number color="#69c569" :number="totalRecovered" />
+          </li>
+
+          <li>
+            <p class="stats--info">Total Death Rate</p>
+            {{rate(totalRecovered, totalDeath)}}%
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div class="px-2 mt-2">
@@ -36,37 +33,41 @@
         v-model="filterVal"
       />
     </div>
-    <table class="mx-auto table-fixed text-center text-xs">
-      <thead>
-        <tr>
-          <th class="sm:px-4 py-2">Countries</th>
-          <th class="sm:px-4 py-2">Infected</th>
-          <th class="sm:px-4 py-2">Death</th>
-          <th class="sm:px-4 py-2">Recovered</th>
-          <th class="sm:px-4 py-2">Rate</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in filteredData" :key="item.name">
-          <td class="w-1/4 border sm:px-4 py-2">{{item.name}}</td>
-          <td class="w-1/4 border sm:px-4 py-2">
-            <Number :number="item.infected" />
-          </td>
-          <td class="w-1/4 border sm:px-4 py-2">
-            <Number :number="item.death" />
-          </td>
-          <td class="w-1/4 border sm:px-4 py-2">
-            <Number :number="item.recovered" />
-          </td>
-          <td class="w-1/4 border sm:px-4 py-2">{{rate(item.recovered, item.death) }}%</td>
-        </tr>
-      </tbody>
-    </table>
+
+    <div class="board" v-for="(item, i) in filteredData" :key="i+''+item.name">
+      <p class="flex mt-3">
+        <img
+          width="30px"
+          :src="require(`../assets/countries/${$options.filters.getLocale(item.name)}.png`)"
+        />
+        <span class="ml-2">{{item.name}}</span>
+      </p>
+
+      <ul class="stats">
+        <li>
+          <p class="stats--info">Infected</p>
+          <Number color="yellow" :number="item.infected" />
+        </li>
+        <li>
+          <p class="stats--info">Death</p>
+          <Number color="red" :number="item.death" />
+        </li>
+        <li>
+          <p class="stats--info">Recovered</p>
+          <Number color="#69c569" :number="item.recovered" />
+        </li>
+        <li>
+          <p class="stats--info">Death Rate</p>
+          {{rate(item.recovered, item.death) }}%
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script>
 import Number from "./Number.vue";
+import countries from "../countries";
 export default {
   name: "Main",
   components: {
@@ -77,7 +78,8 @@ export default {
       filterVal: null,
       updated: null,
       data: null,
-      filteredData: null
+      filteredData: null,
+      countries: null
     };
   },
   computed: {
@@ -153,10 +155,28 @@ export default {
           this.updated = html[0];
           console.log("loaded");
 
-          this.data = json;
+          this.data = json.filter(item => item.name && item.name.length > 0);
           this.filteredData = this.data;
           this.filterItems();
         });
+    }
+  },
+  filters: {
+    getLocale: function(value) {
+      if (!value) return "";
+      if (countries[value]) {
+        return countries[value].toLowerCase();
+      }
+      value = value.toString().toLowerCase();
+      value = value
+        .split(" ")
+        .map(value => value.charAt(0).toUpperCase() + value.slice(1))
+        .join(" ");
+
+      if (countries[value]) {
+        return countries[value].toLowerCase();
+      }
+      return "git";
     }
   },
   mounted() {
@@ -171,4 +191,16 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+.stats {
+  @apply flex flex-row justify-between px-4 py-2 rounded font-semibold bg-gray-800 text-white;
+
+  &--info {
+    font-size: 9px;
+  }
+}
+
+.board {
+  max-width: 500px;
+  margin: auto;
+}
 </style>
