@@ -165,16 +165,19 @@ export default {
     },
     getData() {
       this.loading = true;
+      this.axios.defaults.headers["Cache-Control"] = "no-store";
       this.axios
+
         .get(
-          "https://docs.google.com/spreadsheets/d/e/2PACX-1vQuDj0R6K85sdtI8I-Tc7RCx8CnIxKUQue0TCUdrFOKDw9G3JRtGhl64laDd3apApEvIJTdPFJ9fEUL/pubhtml?gid=0&single=true"
+          "https://docs.google.com/spreadsheets/d/e/2PACX-1vQuDj0R6K85sdtI8I-Tc7RCx8CnIxKUQue0TCUdrFOKDw9G3JRtGhl64laDd3apApEvIJTdPFJ9fEUL/pubhtml?gid=0&single=true&nocache=" +
+            new Date().getTime()
         )
         .then(x => {
           let html = this.parseHtml(x.data);
           let json = this.toJson(html);
 
           this.updated = new Date().toTimeString();
-          console.log("loaded");
+          console.log("...loading");
 
           this.data = json.filter(item => item.name && item.name.length > 0);
           this.filteredData = this.data;
