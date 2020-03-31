@@ -1,6 +1,7 @@
 <template>
   <div class="text-gray-500">
-    <div class="text-center" @click="reload">{{updated}}</div>
+    <div class="time">Update {{time}}s ago</div>
+
     <div>
       <div class="board">
         <ul class="stats">
@@ -25,7 +26,22 @@
       </div>
     </div>
 
-    <div class="px-2 mt-2">
+    <div class="w-1/2 mx-auto px-2 mt-3 flex">
+      <button class="reload" @click="reload">
+        <svg
+          :class="loading ? 'loading': ''"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="white"
+          width="58px"
+          height="58px"
+        >
+          <path
+            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+          />
+          <path d="M0 0h24v24H0z" fill="none" />
+        </svg>
+      </button>
       <input
         class="uppercase text-center bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"
         type="text"
@@ -38,6 +54,7 @@
       <p class="flex mt-3">
         <img
           width="30px"
+          height="20px"
           :src="require(`../assets/countries/${$options.filters.getLocale(item.name)}.png`)"
         />
         <span class="ml-2">{{item.name}}</span>
@@ -75,11 +92,13 @@ export default {
   },
   data() {
     return {
+      loading: true,
       filterVal: null,
       updated: null,
       data: null,
       filteredData: null,
-      countries: null
+      countries: null,
+      time: 0
     };
   },
   computed: {
@@ -98,7 +117,8 @@ export default {
   },
   methods: {
     reload() {
-      this.getData();
+      // alert(22);
+      if (!this.loading) this.getData();
     },
     sum(arr) {
       return arr.reduce((prev, curr) => prev + curr, 0);
@@ -144,6 +164,7 @@ export default {
       return 0;
     },
     getData() {
+      this.loading = true;
       this.axios
         .get(
           "https://docs.google.com/spreadsheets/d/e/2PACX-1vQuDj0R6K85sdtI8I-Tc7RCx8CnIxKUQue0TCUdrFOKDw9G3JRtGhl64laDd3apApEvIJTdPFJ9fEUL/pubhtml?gid=0&single=true"
@@ -152,12 +173,14 @@ export default {
           let html = this.parseHtml(x.data);
           let json = this.toJson(html);
 
-          this.updated = html[0];
+          this.updated = new Date().toTimeString();
           console.log("loaded");
 
           this.data = json.filter(item => item.name && item.name.length > 0);
           this.filteredData = this.data;
           this.filterItems();
+          this.loading = false;
+          this.time = 0;
         });
     }
   },
@@ -183,8 +206,12 @@ export default {
     this.getData();
 
     setInterval(() => {
-      this.getData();
-    }, 60000);
+      this.time++;
+      if (this.time >= 30) {
+        this.getData();
+        this.time = 0;
+      }
+    }, 1000);
   }
 };
 </script>
@@ -202,5 +229,36 @@ export default {
 .board {
   max-width: 500px;
   margin: auto;
+  img {
+    width: 30px;
+    height: 25px;
+  }
+}
+.time {
+  font-size: 9px;
+}
+.reload {
+  position: absolute;
+  margin: 0;
+  margin-right: 13px;
+  right: 0;
+  margin-top: -8px;
+  // svg {
+  //   transform: rotate(360deg);
+  //   transition: all ease 2s;
+  // }
+
+  .loading {
+    -webkit-animation: rotation 2s infinite linear;
+  }
+
+  @-webkit-keyframes rotation {
+    from {
+      -webkit-transform: rotate(0deg);
+    }
+    to {
+      -webkit-transform: rotate(359deg);
+    }
+  }
 }
 </style>

@@ -34,7 +34,7 @@ export default {
       if (diff > 0) {
         this.diff = diff;
       }
-      let speed = this.speed ? this.speed : 100;
+      let speed = this.speed ? this.speed : 10;
       const timeValue = setInterval(() => {
         this.current++;
         if (newVal <= this.current) {
