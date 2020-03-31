@@ -127,7 +127,7 @@ export default {
       if (!this.data) return;
       let val = this.filterVal ? this.filterVal.toUpperCase() : "";
 
-      this.filteredData = this.data.filter(item => item.name.startsWith(val));
+      this.filteredData = this.data.filter(item => item.name.includes(val));
     },
     parseHtml(html) {
       return html
@@ -222,8 +222,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 .stats {
-  @apply flex flex-row justify-between px-4 py-2 rounded font-semibold bg-gray-800 text-white;
-
+  @apply flex grid text-center grid-cols-4 gap-1 px-4 py-2 rounded font-semibold bg-gray-800 text-white;
+  flex-grow: 0; /* do not grow   - initial value: 0 */
+  flex-shrink: 0;
   &--info {
     font-size: 9px;
   }

@@ -51,4 +51,8 @@ export default {
 };
 </script>
 
-
+<style lang="scss" scoped>
+span {
+  white-space: nowrap;
+}
+</style>
