@@ -1,6 +1,6 @@
 <template>
   <div class="text-gray-500">
-    <div class="time">Update {{time}}s ago</div>
+    <div class="time">Updated {{time}}s ago</div>
 
     <div>
       <div class="board">
