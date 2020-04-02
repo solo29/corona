@@ -136,7 +136,8 @@ export default {
     },
     rate(recovered, death) {
       let sum = +recovered + +death;
-      return ((+death * 100) / sum).toFixed(2);
+      let ret = ((+death * 100) / sum).toFixed(2);
+      return isNaN(ret) ? 0 : ret;
     },
     toJson(arr) {
       // let date = arr[0];
