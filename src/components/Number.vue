@@ -21,6 +21,7 @@ export default {
     color: String
   },
   mounted() {
+    // console.log("mounted");
     this.current = this.number;
   },
   watch: {

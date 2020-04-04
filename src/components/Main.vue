@@ -51,33 +51,35 @@
     </div>
 
     <div class="board" v-for="(item, i) in filteredData" :key="i+''+item.name">
-      <p class="flex mt-3">
-        <img
-          width="30px"
-          height="20px"
-          :src="require(`../assets/countries/${$options.filters.getLocale(item.name)}.png`)"
-        />
-        <span class="ml-2">{{item.name}}</span>
-      </p>
+      <div v-show="item.visible">
+        <p class="flex mt-3">
+          <img
+            width="30px"
+            height="20px"
+            :src="require(`../assets/countries/${$options.filters.getLocale(item.name)}.png`)"
+          />
+          <span class="ml-2">{{item.name}}</span>
+        </p>
 
-      <ul class="stats">
-        <li>
-          <p class="stats--info">Infected</p>
-          <Number color="yellow" :number="item.infected" />
-        </li>
-        <li>
-          <p class="stats--info">Death</p>
-          <Number color="red" :number="item.death" />
-        </li>
-        <li>
-          <p class="stats--info">Recovered</p>
-          <Number color="#69c569" :number="item.recovered" />
-        </li>
-        <li>
-          <p class="stats--info">Death Rate</p>
-          {{rate(item.recovered, item.death) }}%
-        </li>
-      </ul>
+        <ul class="stats">
+          <li>
+            <p class="stats--info">Infected</p>
+            <Number color="yellow" :number="item.infected" />
+          </li>
+          <li>
+            <p class="stats--info">Death</p>
+            <Number color="red" :number="item.death" />
+          </li>
+          <li>
+            <p class="stats--info">Recovered</p>
+            <Number color="#69c569" :number="item.recovered" />
+          </li>
+          <li>
+            <p class="stats--info">Death Rate</p>
+            {{rate(item.recovered, item.death) }}%
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -127,7 +129,10 @@ export default {
       if (!this.data) return;
       let val = this.filterVal ? this.filterVal.toUpperCase() : "";
 
-      this.filteredData = this.data.filter(item => item.name.includes(val));
+      this.filteredData = this.data.filter(item => {
+        item.visible = item.name.includes(val);
+        return item;
+      });
     },
     parseHtml(html) {
       return html
